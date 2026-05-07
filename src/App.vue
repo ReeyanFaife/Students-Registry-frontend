@@ -11,10 +11,16 @@
         <h1>Registo de Estudantes</h1>
         <p>Cadastre, consulte e atualize estudantes em uma interface mais limpa e organizada.</p>
       </div>
-      <button class="ghost-button" type="button" @click="confirmarSair">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        Sair
-      </button>
+      <div class="hero-actions">
+        <button class="ghost-button" type="button" @click="gerarRelatorio">
+          <i class="fa-solid fa-file-arrow-down"></i>
+          Gerar relatório
+        </button>
+        <button class="ghost-button" type="button" @click="confirmarSair">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          Sair
+        </button>
+      </div>
     </section>
 
     <section class="stats-grid" aria-label="Resumo">
@@ -157,7 +163,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import axios from 'axios'
 import Login from './Login.vue'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'https://students-registry-backend.onrender.com'
 
 const autenticado = ref(false)
 const usuario = ref(null)
@@ -287,6 +293,11 @@ const confirmarSair = () => {
   if (confirm('Tem certeza que deseja sair?')) {
     sair()
   }
+}
+
+const gerarRelatorio = () => {
+  const relatorioUrl = `${API}?acao=relatorio&formato=csv`
+  window.open(relatorioUrl, '_blank')
 }
 
 const iniciais = (nome) => {
