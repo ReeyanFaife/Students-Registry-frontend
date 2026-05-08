@@ -17,7 +17,8 @@
           Sistema académico
         </span>
         <h1>Registo de Estudantes</h1>
-        <p>Bem-vindo, {{ nomeUsuario }}. Cadastre, consulte e atualize estudantes em uma interface mais limpa e organizada.</p>
+        <p>Bem-vindo, {{ nomeUsuario }}. 
+        Cadastre, consulte e atualize estudantes em uma interface mais limpa e organizada.</p>
       </div>
       <button class="ghost-button" type="button" @click="confirmarSair">
         <i class="fa-solid fa-right-from-bracket"></i>
@@ -167,7 +168,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import axios from 'axios'
 import Login from './Login.vue'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'https://students-registry-backend.onrender.com'
 
 const autenticado = ref(false)
 const usuario = ref(null)
