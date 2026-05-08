@@ -1,5 +1,13 @@
 <template>
-  <Login v-if="!autenticado" :erro="erroLogin" @login="entrar" @register="registrar" />
+  <Login
+    v-if="!autenticado"
+    :erro="erroLogin"
+    :sucesso="sucessoLogin"
+    :cadastro-concluido="cadastroConcluido"
+    @login="entrar"
+    @register="registrar"
+    @clear-feedback="limparFeedbackLogin"
+  />
 
   <main v-else class="page-shell">
     <section class="hero">
@@ -9,18 +17,12 @@
           Sistema académico
         </span>
         <h1>Registo de Estudantes</h1>
-        <p>Cadastre, consulte e atualize estudantes em uma interface mais limpa e organizada.</p>
+        <p>Bem-vindo, {{ nomeUsuario }}. Cadastre, consulte e atualize estudantes em uma interface mais limpa e organizada.</p>
       </div>
-      <div class="hero-actions">
-        <button class="ghost-button" type="button" @click="gerarRelatorio">
-          <i class="fa-solid fa-file-arrow-down"></i>
-          Gerar relatório
-        </button>
-        <button class="ghost-button" type="button" @click="confirmarSair">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          Sair
-        </button>
-      </div>
+      <button class="ghost-button" type="button" @click="confirmarSair">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Sair
+      </button>
     </section>
 
     <section class="stats-grid" aria-label="Resumo">
@@ -155,6 +157,8 @@
         </ul>
       </section>
     </section>
+
+    <footer class="app-footer">Copyright 2026 Reeyan Faife</footer>
   </main>
 </template>
 
@@ -163,11 +167,13 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import axios from 'axios'
 import Login from './Login.vue'
 
-const API = import.meta.env.VITE_API_URL || 'https://students-registry-backend.onrender.com'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const autenticado = ref(false)
 const usuario = ref(null)
 const erroLogin = ref('')
+const sucessoLogin = ref('')
+const cadastroConcluido = ref(0)
 const estudantes = ref([])
 const form = ref({ nome: '', numero: '', curso: '' })
 const carregando = ref(false)
@@ -193,8 +199,15 @@ const horaAtual = computed(() => {
   return agora.value.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
 })
 
-const entrar = async (login) => {
+const nomeUsuario = computed(() => usuario.value?.nome || 'usuario')
+
+const limparFeedbackLogin = () => {
   erroLogin.value = ''
+  sucessoLogin.value = ''
+}
+
+const entrar = async (login) => {
+  limparFeedbackLogin()
 
   try {
     const res = await axios.post(`${API}?acao=login`, login)
@@ -207,13 +220,12 @@ const entrar = async (login) => {
 }
 
 const registrar = async (dados) => {
-  erroLogin.value = ''
+  limparFeedbackLogin()
 
   try {
-    const res = await axios.post(`${API}?acao=registro`, dados)
-    usuario.value = res.data.usuario
-    autenticado.value = true
-    await carregar()
+    await axios.post(`${API}?acao=registro`, dados)
+    cadastroConcluido.value += 1
+    sucessoLogin.value = 'Conta criada com sucesso. Entre com o seu email e senha.'
   } catch (error) {
     erroLogin.value = error?.response?.data?.message || 'Nao foi possivel criar a conta.'
   }
@@ -222,6 +234,7 @@ const registrar = async (dados) => {
 const sair = () => {
   autenticado.value = false
   usuario.value = null
+  sucessoLogin.value = ''
   estudantes.value = []
   limparFormulario()
 }
@@ -293,11 +306,6 @@ const confirmarSair = () => {
   if (confirm('Tem certeza que deseja sair?')) {
     sair()
   }
-}
-
-const gerarRelatorio = () => {
-  const relatorioUrl = `${API}?acao=relatorio&formato=csv`
-  window.open(relatorioUrl, '_blank')
 }
 
 const iniciais = (nome) => {
@@ -462,6 +470,14 @@ h1 {
   align-items: start;
 }
 
+.app-footer {
+  padding: 18px 0 8px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .panel {
   border: 1px solid rgba(148, 163, 184, 0.32);
   border-radius: 8px;
@@ -581,6 +597,11 @@ h2 {
 .message.error {
   color: #991b1b;
   background: #fee2e2;
+}
+
+.message.success {
+  color: #166534;
+  background: #dcfce7;
 }
 
 .empty-state {
